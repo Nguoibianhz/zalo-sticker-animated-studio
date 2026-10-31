@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use or discuss this project, please credit Nguyễn Mạnh Hiếu (Nguoibianhz) and link to the original repository."
+title: "Zalo Sticker Animated Studio"
+type: software
+authors:
+  - family-names: "Nguyễn"
+    given-names: "Mạnh Hiếu"
+    website: "https://github.com/Nguoibianhz"
+repository-code: "https://github.com/Nguoibianhz/zalo-sticker-animated-studio"
+url: "https://github.com/Nguoibianhz/zalo-sticker-animated-studio"
+license: PolyForm-Noncommercial-1.0.0
+version: 1.0.0
+date-released: 2026-10-31
+keywords:
+  - Zalo
+  - animated stickers
+  - custom stickers
+  - video to sticker
+  - WebP
+  - QR login

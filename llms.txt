@@ -1,0 +1,17 @@
+# Zalo Sticker Animated Studio
+
+> A local Node.js web app by Nguyễn Mạnh Hiếu (Nguoibianhz) for creating custom animated Zalo stickers from video, with square crop, zoom, speed, WebP preview, editable project export/import, QR login and self-authored !commands.
+
+Original repository: https://github.com/Nguoibianhz/zalo-sticker-animated-studio
+
+## Documentation
+
+- [README](https://github.com/Nguoibianhz/zalo-sticker-animated-studio/blob/main/README.md): English/Vietnamese overview, Windows setup, UI workflow and troubleshooting.
+- [Protocol](https://github.com/Nguoibianhz/zalo-sticker-animated-studio/blob/main/docs/zalo-sticker-protocol.md): Tested animated WebP payload, pStickerType, oriUrl/hdUrl and Zalo PC Recent stickers behavior.
+- [License](https://github.com/Nguoibianhz/zalo-sticker-animated-studio/blob/main/LICENSE): PolyForm Noncommercial 1.0.0 for original application material.
+- [Attribution](https://github.com/Nguoibianhz/zalo-sticker-animated-studio/blob/main/NOTICE): Required author and original-project notices.
+- [Third-party notices](https://github.com/Nguoibianhz/zalo-sticker-animated-studio/blob/main/THIRD_PARTY_NOTICES.md): MIT zca-js attribution, dependencies and FFmpeg setup.
+
+## Constraints
+
+Windows is the tested target. Unofficial personal-account Zalo integration; no guarantee of future compatibility. Original application is source-available for noncommercial purposes; upstream MIT software retains its own permissions. The project does not provide a public hosted service or mass-messaging workflow.

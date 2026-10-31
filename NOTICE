@@ -1,0 +1,11 @@
+Required Notice: Copyright (c) 2026 Nguyễn Mạnh Hiếu (Nguoibianhz), https://github.com/Nguoibianhz
+Required Notice: Original project: Zalo Sticker Animated Studio, https://github.com/Nguoibianhz/zalo-sticker-animated-studio
+
+Original application code, interface and documentation are offered under the
+PolyForm Noncommercial License 1.0.0 in LICENSE. Preserve these Required Notice
+lines and the license when sharing any part of that material.
+
+Third-party software is excluded from that license. In particular,
+vendor/zca-js retains its upstream MIT license and copyright notices, including
+the portions modified for animated custom sticker compatibility.
+See THIRD_PARTY_NOTICES.md for attribution and scope.
