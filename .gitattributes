@@ -3,3 +3,5 @@
 *.jpg binary
 *.webp binary
 *.exe binary
+
+vendor/zca-js/** linguist-vendored=true

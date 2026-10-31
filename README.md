@@ -10,6 +10,8 @@
 
 Created by **[Nguyễn Mạnh Hiếu / Nguoibianhz](https://github.com/Nguoibianhz)**. Original repository: **https://github.com/Nguoibianhz/zalo-sticker-animated-studio**.
 
+![Zalo Sticker Animated Studio local web interface](docs/images/studio.jpg)
+
 ## What this is
 
 A white, minimal, Vietnamese-language **local web application** for making personal Zalo animated stickers. It uses Node.js, FFmpeg and an unofficial zca-js integration. It is not a sticker pack submission service, official Zalo API, or cloud-hosted bot. No official sticker-store publication is needed for this workflow.
