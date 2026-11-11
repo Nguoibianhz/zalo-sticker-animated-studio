@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id), video=$('video'), canvas=$('editor'), c
 let projects=[],current=null,dirty=false,zoom=1,pan={x:0,y:0},mode='crop',drag=null,zaloStatus=null,polling=false;
 const csrf=document.querySelector('meta[name=studio-token]').content;
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let toastTimer;function toast(message){$('toast').textContent=message;$('toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),4200);}
+let toastTimer;function toast(message,duration=4200){$('toast').textContent=message;$('toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),duration);}
 async function api(url,data,method){const res=await fetch(url,data!==undefined?{method:method||'POST',headers:{'Content-Type':'application/json','X-Studio-Token':csrf},body:JSON.stringify(data)}:{});const text=await res.text();let result;try{result=text?JSON.parse(text):null;}catch{throw new Error('Server trả phản hồi không hợp lệ. Hãy đóng cửa sổ chạy web, mở lại start.bat rồi tải lại trang.');}if(!result)throw new Error('Server đang chạy bản cũ. Hãy đóng cửa sổ chạy web, mở lại start.bat rồi tải lại trang.');if(!res.ok)throw new Error(result.error||'Có lỗi xảy ra');return result;}
 function loading(on,title){$('loading').classList.toggle('hidden',!on);if(title)$('loading-title').textContent=title;}
 function time(t){return `${Math.floor(t/60).toString().padStart(2,'0')}:${Math.floor(t%60).toString().padStart(2,'0')}`;}
@@ -35,8 +35,27 @@ async function deleteProject(id){
  try{await api('/api/projects/'+id,{},'DELETE');if(current?.id===id)clearEditor();await refresh();await pollZalo();toast('Đã xóa khỏi bộ sưu tập');clearTimeout(toastTimer);const undo=document.createElement('button');undo.textContent='Hoàn tác';undo.className='toast-undo';undo.onclick=async()=>{try{const restored=await api('/api/projects/'+id+'/restore',{});await refresh();await openProject(restored);toast('Đã khôi phục sticker. Bật lại lệnh gửi nếu cần.');}catch(e){toast(e.message);}};$('toast').appendChild(undo);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),15000);
  }catch(e){toast(e.message);}
 }
-async function base64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result.split(',')[1]);r.onerror=reject;r.readAsDataURL(file);});}
-async function upload(file){if(!file)return;if(file.size>100*1024*1024)return toast('Chọn tệp nhỏ hơn 100 MB');if(current&&dirty)await saveCurrent(false);loading(true,'Đang chuẩn bị video của bạn…');try{const p=await api('/api/projects',{name:file.name.replace(/\.[^.]+$/,''),video:await base64(file)});await refresh();await openProject(p);toast('Video đã sẵn sàng. Kéo vùng vuông để chọn khung.');}catch(e){toast(e.message);}finally{loading(false);$('file').value='';}}
+async function base64(file){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result.split(',')[1]);r.onerror=()=>reject(new Error('Trình duyệt không đọc được tệp đã chọn. Hãy chọn lại video từ ổ đĩa.'));r.readAsDataURL(file);});}
+async function upload(file) {
+  if (!file) return;
+  if (file.size > 100 * 1024 * 1024) return toast('Chọn tệp nhỏ hơn 100 MB');
+  loading(true, 'Đang chuẩn bị video của bạn…');
+  try {
+    if (current && dirty) await saveCurrent(false);
+    const p = await api('/api/projects', {
+      name: file.name.replace(/\.[^.]+$/, ''),
+      video: await base64(file),
+    });
+    await refresh();
+    await openProject(p);
+    toast('Video đã sẵn sàng. Kéo vùng vuông để chọn khung.');
+  } catch (error) {
+    toast(error.message, 15000);
+  } finally {
+    loading(false);
+    $('file').value = '';
+  }
+}
 async function saveCurrent(show=true){if(!current)return;const name=$('name').value.trim()||'Sticker mới',cmd=$('command').value;const p=await api('/api/projects/'+current.id,{name,command:cmd,settings:current.settings},'PATCH');current=p;dirty=false;await refresh();if(show)toast('Đã lưu dự án trên máy');return p;}
 for(const id of ['upload-button','change-video'])$(id).onclick=()=>$('file').click();$('file').onchange=()=>upload($('file').files[0]);$('import-button').onclick=()=>$('project-file').click();$('project-file').onchange=async()=>{const f=$('project-file').files[0];if(!f)return;loading(true,'Đang mở lại dự án…');try{const p=await api('/api/import',JSON.parse(await f.text()));await refresh();await openProject(p);toast('Đã mở dự án. Bạn có thể chỉnh sửa và xuất lại.');}catch(e){toast(e.message);}finally{loading(false);$('project-file').value='';}};
 const drop=$('drop-zone');for(const e of ['dragenter','dragover'])drop.addEventListener(e,x=>{x.preventDefault();drop.classList.add('dragover')});for(const e of ['dragleave','drop'])drop.addEventListener(e,x=>{x.preventDefault();drop.classList.remove('dragover')});drop.addEventListener('drop',e=>upload(e.dataTransfer.files[0]));
