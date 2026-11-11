@@ -132,11 +132,22 @@ Tests generate a synthetic video, exercise real FFmpeg rendering and speed/trim,
 
 The vendored upstream baseline is [`edcbe7c`](https://github.com/tranvnthuong/zca-js/commit/edcbe7cbbf50e4e80af3e94c9b02b17f1c7e6a1c), related to [zca-js PR #389](https://github.com/RFS-ADRENO/zca-js/pull/389). Both TypeScript source and compiled custom-sticker factory carry the compatibility changes. Rebuilding the upstream package without these changes can reintroduce the bug.
 
+## Update an existing installation
+
+Close the local server, then run this in the project folder:
+
+```powershell
+npm run update
+```
+
+The command compares your local Git commit with the latest `main` on GitHub. It reports when the code is current, applies newer commits in the same folder, and runs setup to check FFmpeg and install dependencies if needed. Local projects in `data/` stay in place. It stops if the source has pending edits or local commits that cannot be fast-forwarded. Open `start.bat` again after updating.
+
+For a Git clone made before this command existed, run `git pull --ff-only origin main` once, then `npm run update`. If your installation came from a ZIP, clone the repository to use the updater and move your local projects using the `.zsticker` export/import feature. npm's built-in `npm update` command manages dependencies.
+
 ## Troubleshooting
 
 - **Cannot start FFmpeg / Không khởi động được FFmpeg:** run `npm run setup` from the repository folder. If `FFMPEG_PATH` is set, check that it points to a working executable. On Windows, run `.\vendor\ffmpeg.exe -version` in PowerShell to check the bundled executable.
 - **Cannot read video frames / Không tạo được bản xem trước:** include the full message with the FFmpeg code when reporting the issue, along with the app commit, OS, and whether the same file works on another machine. Remove personal paths from the message before sharing.
-
 - **Unexpected end of JSON / old server:** close the server window, reopen `start.bat`, then reload the browser. Editing source does not hot-reload Node.
 - **QR expired:** generate a new QR and confirm promptly on the phone. QR images/tokens should never be posted in issues.
 - **Command does nothing:** verify the session is connected, sticker has been rendered and armed, the exact command matches, and the command was written by the same account that scanned QR.

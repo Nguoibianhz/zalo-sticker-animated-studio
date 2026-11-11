@@ -9,6 +9,6 @@
   "homepage": "https://github.com/Nguoibianhz/zalo-sticker-animated-studio#readme",
   "repository": {"type":"git","url":"https://github.com/Nguoibianhz/zalo-sticker-animated-studio.git"},
   "keywords": ["zalo","animated-sticker","custom-sticker","video-to-sticker","webp","ffmpeg","qr-login","zca-js"],
-  "scripts": {"setup":"node scripts/setup.mjs","start":"node server.mjs","test":"node --test tests/*.test.mjs"},
+  "scripts": {"setup":"node scripts/setup.mjs","start":"node server.mjs","update":"node scripts/update.mjs","test":"node --test tests/*.test.mjs"},
   "engines": {"node":">=20"}
 }
