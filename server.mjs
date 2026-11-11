@@ -16,20 +16,34 @@ const file=(id,name)=>path.join(data,id,name);
 const validId=id=>/^[a-f0-9-]{36}$/.test(id);
 async function get(id){if(!validId(id))throw new Error('Dự án không hợp lệ');return JSON.parse(await fs.readFile(file(id,'project.json'),'utf8'));}
 async function save(p){await fs.writeFile(file(p.id,'project.json'),JSON.stringify(p,null,2));return p;}
-function run(args){return new Promise((resolve,reject)=>{const p=spawn(ffmpeg,['-hide_banner',...args],{windowsHide:true});let err='';p.stderr.on('data',b=>{err=(err+b).slice(-30000)});p.on('error',reject);p.on('close',code=>code===0?resolve(err):reject(new Error('Không xử lý được video. '+err.slice(-700))));});}
-async function probe(source){let log;try{log=await run(['-i',source,'-f','null','-t','0','-']);}catch(e){throw new Error('Không đọc được video. Hãy chọn MP4, WebM, MOV, GIF hoặc WebP hợp lệ.');}
-const dimensions=log.match(/Video:.*?\b(\d{2,5})x(\d{2,5})\b/);const d=log.match(/Duration: (\d+):(\d+):([\d.]+)/);
+function run(args, failure = 'Không xử lý được video') {
+  return new Promise((resolve, reject) => {
+    const process = spawn(ffmpeg, ['-hide_banner', ...args], {windowsHide: true});
+    let stderr = '';
+    process.stderr.on('data', chunk => { stderr = (stderr + chunk).slice(-30000); });
+    process.on('error', error => {
+      reject(new Error(`Không khởi động được FFmpeg (${error.code || 'spawn'}). Chạy npm run setup và kiểm tra FFMPEG_PATH nếu đã đặt.`));
+    });
+    process.on('close', (code, signal) => {
+      if (code === 0) return resolve(stderr);
+      const detail = stderr.trim().slice(-700);
+      reject(new Error(`${failure} (FFmpeg ${signal || code}).${detail ? ' ' + detail : ''}`));
+    });
+  });
+}
+async function probe(source){const log=await run(['-i',source,'-map','0:V:0','-an','-frames:v','1','-abort_on','empty_output','-f','null','-'],'Không đọc được khung hình video');
+const dimensions=log.split('Output #0,')[1]?.match(/Video:.*?\b(\d{1,5})x(\d{1,5})\b/);const d=log.match(/Duration: (\d+):(\d+):([\d.]+)/);
 if(!dimensions||!d)throw new Error('Video phải có thời lượng xác định.');
 const media={width:+dimensions[1],height:+dimensions[2],duration:+d[1]*3600+ +d[2]*60+ +d[3]};if(media.duration>120)throw new Error('Chọn video tối đa 2 phút cho sticker.');return media;}
 async function create(name,source,imported){const id=randomUUID();await fs.mkdir(path.join(data,id));await fs.writeFile(file(id,'source'),source);
 try {const media=await probe(file(id,'source'));const side=Math.min(media.width,media.height);const s=imported?settings(imported,media):{x:Math.floor((media.width-side)/2),y:Math.floor((media.height-side)/2),side,start:0,end:media.duration,speed:1,size:256,fps:15,thumb:Math.min(1,media.duration/2)};
-await run(['-loglevel','error','-i',file(id,'source'),'-vf',"scale='min(1280,iw)':-2,format=yuv420p",'-an','-c:v','libx264','-preset','veryfast','-crf','23','-movflags','+faststart','-y',file(id,'preview.mp4')]);
+await run(['-loglevel','error','-i',file(id,'source'),'-map','0:V:0','-vf',"scale='max(2,trunc(min(1280,iw)/2)*2)':-2,format=yuv420p",'-an','-c:v','libx264','-preset','veryfast','-crf','23','-movflags','+faststart','-y',file(id,'preview.mp4')],'Không tạo được bản xem trước');
 return save({id,name:String(name||'Sticker mới').slice(0,80),command:'!sticker-'+id.slice(0,4),media,settings:s,ready:false,createdAt:new Date().toISOString()});}catch(e){await fs.rm(path.join(data,id),{recursive:true,force:true});throw e;}}
 const rendering=new Set();
 async function render(p){if(rendering.has(p.id))throw new Error('Sticker đang được xử lý');rendering.add(p.id);try{const s=p.settings;const crop=`crop=${s.side}:${s.side}:${s.x}:${s.y},scale=${s.size}:${s.size}:flags=lanczos`;
-await run(['-loglevel','error','-ss',String(s.start),'-t',String(s.end-s.start),'-i',file(p.id,'source'),'-vf',`${crop},setpts=(PTS-STARTPTS)/${s.speed},fps=${s.fps}`,'-an','-c:v','libwebp_anim','-loop','0','-quality','78','-y',file(p.id,'sticker.tmp.webp')]);
+await run(['-loglevel','error','-ss',String(s.start),'-t',String(s.end-s.start),'-i',file(p.id,'source'),'-map','0:V:0','-vf',`${crop},setpts=(PTS-STARTPTS)/${s.speed},fps=${s.fps}`,'-an','-c:v','libwebp_anim','-loop','0','-quality','78','-y',file(p.id,'sticker.tmp.webp')]);
 const bytes=await fs.readFile(file(p.id,'sticker.tmp.webp'));const frames=webpFrames(bytes);if(frames<2)throw new Error('Đoạn cắt quá ngắn để tạo ảnh động. Hãy tăng thời lượng hoặc FPS.');
-await run(['-loglevel','error','-ss',String(s.thumb),'-i',file(p.id,'source'),'-vf',crop,'-frames:v','1','-update','1','-y',file(p.id,'thumbnail.png')]);
+await run(['-loglevel','error','-ss',String(s.thumb),'-i',file(p.id,'source'),'-map','0:V:0','-vf',crop,'-frames:v','1','-update','1','-y',file(p.id,'thumbnail.png')]);
 await fs.rename(file(p.id,'sticker.tmp.webp'),file(p.id,'sticker.webp'));p.ready=true;p.renderedAt=Date.now();p.bytes=bytes.length;p.frames=frames;await save(p);return p;}finally{rendering.delete(p.id);}}
 let api=null,abortLogin=null,loginPromise=null,generation=0,busy=false,lastSend=0;
 let zalo={status:'disconnected',qr:null,message:'Chưa kết nối Zalo',armed:[],events:[]};

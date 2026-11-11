@@ -134,6 +134,9 @@ The vendored upstream baseline is [`edcbe7c`](https://github.com/tranvnthuong/zc
 
 ## Troubleshooting
 
+- **Cannot start FFmpeg / Không khởi động được FFmpeg:** run `npm run setup` from the repository folder. If `FFMPEG_PATH` is set, check that it points to a working executable. On Windows, run `.\vendor\ffmpeg.exe -version` in PowerShell to check the bundled executable.
+- **Cannot read video frames / Không tạo được bản xem trước:** include the full message with the FFmpeg code when reporting the issue, along with the app commit, OS, and whether the same file works on another machine. Remove personal paths from the message before sharing.
+
 - **Unexpected end of JSON / old server:** close the server window, reopen `start.bat`, then reload the browser. Editing source does not hot-reload Node.
 - **QR expired:** generate a new QR and confirm promptly on the phone. QR images/tokens should never be posted in issues.
 - **Command does nothing:** verify the session is connected, sticker has been rendered and armed, the exact command matches, and the command was written by the same account that scanned QR.
