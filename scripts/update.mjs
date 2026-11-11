@@ -17,8 +17,7 @@ function git(...args) {
 }
 
 try {
-  const gitRoot = git('rev-parse', '--show-toplevel');
-  if (path.relative(root, gitRoot) !== '') {
+  if (git('rev-parse', '--show-prefix') !== '') {
     throw new Error('Hãy chạy lệnh trong bản cài của repo này được tạo bằng git clone.');
   }
   const local = git('rev-parse', 'HEAD');
